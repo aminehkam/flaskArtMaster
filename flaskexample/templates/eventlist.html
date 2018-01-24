@@ -1,0 +1,14 @@
+{% extends "template.html" %}
+the above says, use template.html and replace the following blocks with what I provide here
+
+{% block title %}Facebook Events{% endblock %}
+{% block content %}
+<!-- http://www.rubycoloredglasses.com/2015/11/looping-through-dictionaries-in-jinja2-templates/ -->
+  {% for event_detail in events.values() %}
+    <div>
+      <a class="event-btn btn btn-info" href="{{event_detail.link}}">{{event_detail.name}}</a>
+    </div>
+  {% endfor %}
+{% endblock %}
+
+  <!-- <img src='{{classification_result.source}}' width='300px'> -->

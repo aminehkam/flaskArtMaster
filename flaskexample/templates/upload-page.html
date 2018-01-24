@@ -1,0 +1,12 @@
+{% extends "template.html" %}
+{% block title %}Upload an Image{% endblock %}
+{% block content %}
+  <h1>Upload a Painting</h1>
+  <p>Upload an image of a painting an find out where you can find similar paintings in your area.</p>
+  <form method="post" enctype="multipart/form-data">
+    <div class="text-center">
+      <input id="paintingfile" name="paintingfile" type="file" class="form-control flex" style="width:50%; margin: 0 auto">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+{% endblock %}

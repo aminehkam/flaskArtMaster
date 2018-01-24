@@ -1,0 +1,53 @@
+{% extends "template.html" %}
+{% block title %}Upload an Image{% endblock %}
+{% block content %}
+  <h1></h1>
+
+<div class="card">
+  <div class="card-block">
+    <h4 class="card-title">About the Painting That You Uploaded</h4>
+    <h6 class="card-subtitle mb-2 text-muted">We classified your painting as</h6>
+  </div>
+  <img src='/static/uploads/{{filename}}' style="width:200px"/>
+  <div class="row">
+  <div class="center-block">
+  <table class="table table-nonfluid">
+    <thead>
+        <tr>
+          <th class="text-center">Style</th>
+          <th class="text-center">Score</th>
+          <th class="text-center">Museum with Similar Style</th>
+          <th class="text-center">Upcoming Events</th>
+        </tr>
+    </thead>
+    <tbody>
+      {% for classification_result in classification_results %}
+        <tr>
+          <td>{{classification_result.label}}</td>
+          <td>{{classification_result.score | round(3)}}</td>
+          {% if classification_result.more_info %}
+          <td>
+            <a class="card-link btn btn-info" href="{{classification_result.more_info.website}}">{{classification_result.more_info.museum_name}}</a>
+          </td>
+          <td>
+            {% for an_event in classification_result.more_info.fb_events %}
+              <a class="card-link btn btn-info" href="{{an_event}}">Event</a>
+            {% endfor %}
+          </td>
+          {% else %}
+          <td>-</td><td>-</td>
+          {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  </div>
+</div>
+
+
+<a href="/">Want to check another painting?</a>
+{% endblock %}
+
+  <!-- <img src='{{classification_result.source}}' width='300px'> -->
