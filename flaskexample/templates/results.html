@@ -1,53 +1,42 @@
 {% extends "template.html" %}
 {% block title %}Upload an Image{% endblock %}
 {% block content %}
-  <h1></h1>
-
-<div class="card">
-  <div class="card-block">
-    <h4 class="card-title">About the Painting That You Uploaded</h4>
-    <h6 class="card-subtitle mb-2 text-muted">We classified your painting as</h6>
-  </div>
-  <img src='/static/uploads/{{filename}}' style="width:200px"/>
   <div class="row">
-  <div class="center-block">
-  <table class="table table-nonfluid">
-    <thead>
-        <tr>
-          <th class="text-center">Style</th>
-          <th class="text-center">Score</th>
-          <th class="text-center">Museum with Similar Style</th>
-          <th class="text-center">Upcoming Events</th>
-        </tr>
-    </thead>
-    <tbody>
-      {% for classification_result in classification_results %}
-        <tr>
-          <td>{{classification_result.label}}</td>
-          <td>{{classification_result.score | round(3)}}</td>
-          {% if classification_result.more_info %}
-          <td>
-            <a class="card-link btn btn-info" href="{{classification_result.more_info.website}}">{{classification_result.more_info.museum_name}}</a>
-          </td>
-          <td>
-            {% for an_event in classification_result.more_info.fb_events %}
-              <a class="card-link btn btn-info" href="{{an_event}}">Event</a>
+    <div class="col-sm-4">
+      <div class="card">
+        <div class="card-block">
+          <h3 class="card-title">You Uploaded a "<strong>{{style}}</strong>" Artwork</h3>
+          <img class="card-img-top center art-piece" src="/static/uploads/{{filename}}" alt="Style">
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-8">
+      <div class="card">
+        <div class="card-header">
+          Museums Showing Similar Artworks
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for museum in museums %}
+          <li class="list-group-item"><a href="{{museum.link}}">{{museum.title}}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="col-xs-12" style="height:2em;"></div>
+      <div class="card">
+        <div class="card-header">
+          Related Facebook Events
+        </div>
+
+        <ul class="list-group list-group-flush">
+          {% if fb_events|length > 0 %}
+            {% for event_id, event in fb_events.items() %}
+            <li class="list-group-item"><a href="{{event.link}}">{{event.title}}</a>&nbsp;(<strong>{{event.location}}</strong>)</li>
             {% endfor %}
-          </td>
           {% else %}
-          <td>-</td><td>-</td>
+            <li class="list-group-item"> No events found for {{style}}. </li>
           {% endif %}
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+        </ul>
+      </div>
+    </div>
   </div>
-  </div>
-</div>
-
-
-<a href="/">Want to check another painting?</a>
 {% endblock %}
-
-  <!-- <img src='{{classification_result.source}}' width='300px'> -->
