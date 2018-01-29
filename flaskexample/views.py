@@ -23,7 +23,7 @@ import json
 import urllib.parse
 import urllib.request
 import us
-
+import pprint
 import numpy as np
 import tensorflow as tf
 
@@ -156,7 +156,7 @@ def get_fb_token():
   # payload = {'grant_type': 'client_credentials', 'client_id': app_id, 'client_secret': app_secret}
   # file = requests.post('https://graph.facebook.com/oauth/access_token?', params = payload)
   # result = json.loads(file.text)['access_token']
-  result = 'EAAB7ZAIUemhABADDwiIpQfMb2RLeJP8cwH9yBv05XGUgPma24uoZCZB8iF8m2kaQVEIsFw5zL4P4W8kPosKCgU6C5XZAlZCTvk1Um0irdyhZCJZBIQNqfaZBTn24FZAThqtQI8H6aqXTpfZBosdPBeb2VG0BiHS05oJ3EaXsGE5K1TIgZDZD'
+  result = 'EAAF1iZCpxo0gBAByZBj0cINVcJ4vSHv3rAqSd4RSjitZCFq89ppwMGwmFmP0m2wW0ZAFtWiMmsjFj4TBfsmPNw7QNbzxZClfha96E2LoxplX8IYvLVhZCZCnkd1D8lZCZAlhFFZAJxCR1VbdSVuKeF4PXdtypt2XYJ1blCZAfmlzXEG0lmsnKR0qwcScvpvLglRpXS1YIX0StFlRtpu45ZBMC9R3'
   return result
 
 @app.route('/eventlist')
@@ -197,22 +197,27 @@ def find_museums(style, result_count=20):
       # 'types':Event
   }
   url = service_url + '?' + urllib.parse.urlencode(params)
-  response = json.loads(urllib.request.urlopen(url).read())
-  state_names = [state.name for state in us.states.STATES_AND_TERRITORIES]
+  content = urllib.request.urlopen(url).read().decode('utf-8')
   results=[]
-  for element in response['itemListElement']:
-      description=element['result']['description'] if 'description' in element['result'] else None
-      url=element['result']['url'] if 'url' in element['result'] else None
-      name=element['result']['name'] if 'name' in element['result'] else None
-      city=element['result']['city'] if 'city' in element['result'] else None
-      sec_url=element['result']['detailedDescription']['url'] if 'detailedDescription' in element['result'] and 'url' in element['result']['detailedDescription'] else None
-      if url is None:
-          url=sec_url
-      if description is not None:
-          words=description.split()
-          state=words[-1]
-          if state in state_names:
-              results.append({'link': url , 'title': name, 'city' : city })
+  state_names = [state.name for state in us.states.STATES_AND_TERRITORIES]
+  try:
+    response = json.loads(content)
+    for element in response['itemListElement']:
+        description=element['result']['description'] if 'description' in element['result'] else None
+        url=element['result']['url'] if 'url' in element['result'] else None
+        name=element['result']['name'] if 'name' in element['result'] else None
+        city=element['result']['city'] if 'city' in element['result'] else None
+        sec_url=element['result']['detailedDescription']['url'] if 'detailedDescription' in element['result'] and 'url' in element['result']['detailedDescription'] else None
+        print(url, name, city, sec_url)
+        if url is None:
+            url=sec_url
+        if description is not None:
+            words=description.split()
+            state=words[-1]
+            if state in state_names:
+                results.append({'link': url , 'title': name, 'city' : city })
+  except Exception as e:
+    print(e)
   return results
 
 @app.route('/museumlist')
@@ -226,6 +231,11 @@ def uploaded_file(filename):
   museums = find_museums(style)
   events = find_fb_events(style)
   return render_template('results.html',fb_events=events, museums= museums, style=style, filename=filename)
+
+@app.route('/styles')
+def supported_styles():
+  return render_template('styles.html')
+
 
 
 
