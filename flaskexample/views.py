@@ -185,7 +185,7 @@ def find_fb_events(style):
   return events
 
 
-def find_museums(style, result_count=20):
+def find_museums(style, result_count=50):
   api_key = 'AIzaSyDQ57s9pTYh8yi3jwMXY_A2ZIzYc27ds9s'
   service_url = 'https://kgsearch.googleapis.com/v1/entities:search'
   params = {
@@ -225,16 +225,35 @@ def museums_page():
   museums = get_museum_list(request.args.get('query', ''))
   return get_render_template('museumlist.html', events=results)
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-  style = find_style(filename)
+# @app.route('/uploads/<filename>')
+# def uploaded_file(filename):
+#   style = find_style(filename)
+#   museums = find_museums(style)
+#   events = find_fb_events(style)
+#   return render_template('results.html',fb_events=events, museums= museums, style=style, filename=filename)
+
+# @app.route('/styles')
+# def supported_styles():
+#   return render_template('styles.html')
+
+def style_page(style, filename):
   museums = find_museums(style)
   events = find_fb_events(style)
   return render_template('results.html',fb_events=events, museums= museums, style=style, filename=filename)
 
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+  style = find_style(filename)
+  return style_page(style, 'uploads/' + filename)
+
 @app.route('/styles')
 def supported_styles():
   return render_template('styles.html')
+
+@app.route('/style-info')
+def style_info():
+  query = request.args.get('q', '')
+  return style_page(query, 'art-styles/' + query + '.jpg')
 
 
 
