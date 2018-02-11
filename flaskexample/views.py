@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-from flask import render_template, request,redirect, url_for, send_from_directory
+from flask import render_template, request, redirect, url_for, send_from_directory
 from flaskexample import app
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
@@ -38,9 +38,11 @@ import tensorflow as tf
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 UPLOAD_PREFIX = os.path.dirname(os.path.realpath(__file__)) + '/'
 
+
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+  return '.' in filename and \
+         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def load_graph(model_file):
   graph = tf.Graph()
@@ -53,13 +55,14 @@ def load_graph(model_file):
 
   return graph
 
+
 def read_tensor_from_image_file(file_name, input_height=299, input_width=299,
-                input_mean=0, input_std=255):
+                                input_mean=0, input_std=255):
   input_name = "file_reader"
   output_name = "normalized"
   file_reader = tf.read_file(file_name, input_name)
   if file_name.endswith(".png"):
-    image_reader = tf.image.decode_png(file_reader, channels = 3,
+    image_reader = tf.image.decode_png(file_reader, channels=3,
                                        name='png_reader')
   elif file_name.endswith(".gif"):
     image_reader = tf.squeeze(tf.image.decode_gif(file_reader,
@@ -67,16 +70,18 @@ def read_tensor_from_image_file(file_name, input_height=299, input_width=299,
   elif file_name.endswith(".bmp"):
     image_reader = tf.image.decode_bmp(file_reader, name='bmp_reader')
   else:
-    image_reader = tf.image.decode_jpeg(file_reader, channels = 3,
+    image_reader = tf.image.decode_jpeg(file_reader, channels=3,
                                         name='jpeg_reader')
   float_caster = tf.cast(image_reader, tf.float32)
-  dims_expander = tf.expand_dims(float_caster, 0);
-  resized = tf.image.resize_bilinear(dims_expander, [input_height, input_width])
+  dims_expander = tf.expand_dims(float_caster, 0)
+  resized = tf.image.resize_bilinear(
+      dims_expander, [input_height, input_width])
   normalized = tf.divide(tf.subtract(resized, [input_mean]), [input_std])
   sess = tf.Session()
   result = sess.run(normalized)
 
   return result
+
 
 def load_labels(label_file):
   label = []
@@ -84,6 +89,7 @@ def load_labels(label_file):
   for l in proto_as_ascii_lines:
     label.append(l.rstrip())
   return label
+
 
 def find_style(file_name):
   # TODO: move these to parameters
@@ -107,22 +113,23 @@ def find_style(file_name):
 
   input_name = "import/" + input_layer
   output_name = "import/" + output_layer
-  input_operation = graph.get_operation_by_name(input_name);
-  output_operation = graph.get_operation_by_name(output_name);
+  input_operation = graph.get_operation_by_name(input_name)
+  output_operation = graph.get_operation_by_name(output_name)
 
   with tf.Session(graph=graph) as sess:
     start = time.time()
     results = sess.run(output_operation.outputs[0],
-                      {input_operation.outputs[0]: t})
-    end=time.time()
+                       {input_operation.outputs[0]: t})
+    end = time.time()
   results = np.squeeze(results)
 
   #top_k = results.argsort()[-5:][::-1]
   top = results.argsort()[-1]
   labels = load_labels(label_file)
-  print('\nEvaluation time (1-image): {:.3f}s\n'.format(end-start))
+  print('\nEvaluation time (1-image): {:.3f}s\n'.format(end - start))
 
   return labels[top] if top < len(labels) else None
+
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -146,9 +153,11 @@ def upload_file():
                               filename=filename))
   return render_template('upload-page.html')
 
+
 @app.route('/about')
 def about_us():
   return render_template('about-us.html')
+
 
 def get_fb_token():
   # app_id = '410719039365960',
@@ -156,105 +165,123 @@ def get_fb_token():
   # payload = {'grant_type': 'client_credentials', 'client_id': app_id, 'client_secret': app_secret}
   # file = requests.post('https://graph.facebook.com/oauth/access_token?', params = payload)
   # result = json.loads(file.text)['access_token']
-  result = 'EAAF1iZCpxo0gBAByZBj0cINVcJ4vSHv3rAqSd4RSjitZCFq89ppwMGwmFmP0m2wW0ZAFtWiMmsjFj4TBfsmPNw7QNbzxZClfha96E2LoxplX8IYvLVhZCZCnkd1D8lZCZAlhFFZAJxCR1VbdSVuKeF4PXdtypt2XYJ1blCZAfmlzXEG0lmsnKR0qwcScvpvLglRpXS1YIX0StFlRtpu45ZBMC9R3'
+  result = 'EAAImEswoEjEBABcUIWSnZBTP8vRY87iUhOL2s1JZCnFoDzDNDjvZByqoPP136TZBCfcJ8rxKHMZA72AKdCTONri1ubKkyzm60AZCCqWSVZChTi70KxxK2yGBLjgYLllVR9snsFBd1T4n3thZBFiqABe9AMdawJudPlcZD'
+  # result = 'EAAF1iZCpxo0gBAByZBj0cINVcJ4vSHv3rAqSd4RSjitZCFq89ppwMGwmFmP0m2wW0ZAFtWiMmsjFj4TBfsmPNw7QNbzxZClfha96E2LoxplX8IYvLVhZCZCnkd1D8lZCZAlhFFZAJxCR1VbdSVuKeF4PXdtypt2XYJ1blCZAfmlzXEG0lmsnKR0qwcScvpvLglRpXS1YIX0StFlRtpu45ZBMC9R3'
   return result
+
 
 @app.route('/eventlist')
 def find_fb_events(style):
   # reading request parameters (i.e. the ones that come after ?blah=foo&blah2=foo1)
-  #http://flask.pocoo.org/docs/0.12/quickstart/
+  # http://flask.pocoo.org/docs/0.12/quickstart/
   events = []
   try:
-    graph = facebook.GraphAPI(access_token=get_fb_token(), version = 2.7)
+    graph = facebook.GraphAPI(access_token=get_fb_token(), version=2.7)
     events = graph.request('/search?q=' + style + '&type=event&limit=100')
     eventList = events['data']
     events = {}
     print(len(eventList))
     for i in eventList:
-      country=i['place']['location']['country'] if 'place' in i and 'location' in i['place'] and 'country' in i['place']['location'] else None
-      # if country=='United States':
-      event_id=(i['id'])
-      location = i['place']['location']['city'] + ', ' + i['place']['location']['state'] if country=='United States' else country
-      events[event_id] = {
-          'title' : i['name'],
-          'location' : location,
-          'link' : 'https://www.facebook.com/events/'+event_id+'/'
-      }
+      country = i['place']['location']['country'] if 'place' in i and 'location' in i['place'] and 'country' in i['place']['location'] else None
+      if country == 'United States':
+        event_id = (i['id'])
+        location = i['place']['location']['city'] + ', ' + \
+            i['place']['location']['state'] if country == 'United States' else country
+        events[event_id] = {
+            'title': i['name'],
+            'location': location,
+            'link': 'https://www.facebook.com/events/' + event_id + '/'
+        }
   except Exception as e:
     print(e)
   return events
 
 
-def find_museums(style, result_count=50):
+def find_in_knowledge_graph(query, types, result_count=3):
   api_key = 'AIzaSyDQ57s9pTYh8yi3jwMXY_A2ZIzYc27ds9s'
   service_url = 'https://kgsearch.googleapis.com/v1/entities:search'
   params = {
-      'query': style,
+      'query': query,
       'limit': result_count,
       'indent': True,
       'key': api_key,
-      'types':'Organization',
-      # 'types':Event
+      'types': types,
   }
   url = service_url + '?' + urllib.parse.urlencode(params)
   content = urllib.request.urlopen(url).read().decode('utf-8')
-  results=[]
-  state_names = [state.name for state in us.states.STATES_AND_TERRITORIES]
+  response = None
   try:
     response = json.loads(content)
-    for element in response['itemListElement']:
-        description=element['result']['description'] if 'description' in element['result'] else None
-        url=element['result']['url'] if 'url' in element['result'] else None
-        name=element['result']['name'] if 'name' in element['result'] else None
-        city=element['result']['city'] if 'city' in element['result'] else None
-        sec_url=element['result']['detailedDescription']['url'] if 'detailedDescription' in element['result'] and 'url' in element['result']['detailedDescription'] else None
-        print(url, name, city, sec_url)
-        if url is None:
-            url=sec_url
-        if description is not None:
-            words=description.split()
-            state=words[-1]
-            if state in state_names:
-                results.append({'link': url , 'title': name, 'city' : city })
   except Exception as e:
     print(e)
+  return response
+
+def find_artists(style, result_count=10):
+  response = find_in_knowledge_graph('painter ' + style, 'Person', result_count)
+  results = []
+  if response:
+    for element in response['itemListElement']:
+      try:
+        detailed_description = element['result']['detailedDescription']['articleBody'] if 'detailedDescription' in element['result'] else None
+        url = element['result']['detailedDescription']['url'] if 'detailedDescription' in element['result'] else None
+        name = element['result']['name'] if 'name' in element['result'] else None
+        results.append({'name' : name, 'description': detailed_description, 'link': url})
+      except Exception as e:
+        print(e)
   return results
+
+def find_museums(style, result_count=10):
+  response = find_in_knowledge_graph(style + '', 'Organization', result_count)
+  results = []
+  if response:
+    state_names = [state.name for state in us.states.STATES_AND_TERRITORIES]
+    for element in response['itemListElement']:
+      try:
+        description = element['result']['description'] if 'description' in element['result'] else None
+        detailed_description = element['result']['detailedDescription']['articleBody'] if 'detailedDescription' in element['result'] else None
+        url = element['result']['url'] if 'url' in element['result'] else None
+        name = element['result']['name'] if 'name' in element['result'] else None
+        city = element['result']['city'] if 'city' in element['result'] else None
+        sec_url = element['result']['detailedDescription']['url'] if 'detailedDescription' in element[
+            'result'] and 'url' in element['result']['detailedDescription'] else None
+        if url is None:
+          url = sec_url
+        if description is not None:
+          words = description.split()
+          state = words[-1]
+          if state in state_names:
+            results.append({'link': url, 'title': name, 'state': state, 'description': detailed_description})
+
+      except Exception as e:
+        print(e)
+  return results
+
 
 @app.route('/museumlist')
 def museums_page():
   museums = get_museum_list(request.args.get('query', ''))
   return get_render_template('museumlist.html', events=results)
 
-# @app.route('/uploads/<filename>')
-# def uploaded_file(filename):
-#   style = find_style(filename)
-#   museums = find_museums(style)
-#   events = find_fb_events(style)
-#   return render_template('results.html',fb_events=events, museums= museums, style=style, filename=filename)
-
-# @app.route('/styles')
-# def supported_styles():
-#   return render_template('styles.html')
 
 def style_page(style, filename):
   museums = find_museums(style)
+  artists = find_artists(style)
   events = find_fb_events(style)
-  return render_template('results.html',fb_events=events, museums= museums, style=style, filename=filename)
+  return render_template('results.html', fb_events=events, museums=museums, artists=artists, style=style, filename=filename)
+
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
   style = find_style(filename)
   return style_page(style, 'uploads/' + filename)
 
+
 @app.route('/styles')
 def supported_styles():
   return render_template('styles.html')
+
 
 @app.route('/style-info')
 def style_info():
   query = request.args.get('q', '')
   return style_page(query, 'art-styles/' + query + '.jpg')
-
-
-
-
